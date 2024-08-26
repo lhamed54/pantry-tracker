@@ -57,30 +57,40 @@ export default function Home() {
       if (docSnap.exists()) {
         const { quantity } = docSnap.data();
         await setDoc(docRef, { quantity: quantity + 1 });
+        console.log(`Updated ${item} quantity to ${quantity + 1}`);
       } else {
         await setDoc(docRef, { quantity: 1 });
+        console.log(`Added new item: ${item}`);
       }
   
-      console.log(`${item} added to Firestore`);
       await updateInventory(); // Fetch updated inventory
     } catch (error) {
       console.error('Error adding item: ', error);
     }
   };
-
+  
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const { quantity } = docSnap.data();
-      if (quantity === 1) {
-        await deleteDoc(docRef);
-      } else {
-        await setDoc(docRef, { quantity: quantity - 1 });
+    try {
+      const docRef = doc(collection(firestore, 'inventory'), item);
+      const docSnap = await getDoc(docRef);
+  
+      if (docSnap.exists()) {
+        const { quantity } = docSnap.data();
+        if (quantity === 1) {
+          await deleteDoc(docRef);
+          console.log(`Deleted item: ${item}`);
+        } else {
+          await setDoc(docRef, { quantity: quantity - 1 });
+          console.log(`Decreased ${item} quantity to ${quantity - 1}`);
+        }
       }
+  
+      await updateInventory();
+    } catch (error) {
+      console.error('Error removing item: ', error);
     }
-    await updateInventory();
   };
+  
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -144,29 +154,30 @@ export default function Home() {
           </Typography>
         </Box>
         <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
-          {inventory.map(({ name, quantity }) => (
-            <Box
-              key={name}
-              width="100%"
-              minHeight="150px"
-              display={'flex'}
-              justifyContent={'space-between'}
-              alignItems={'center'}
-              bgcolor={'#f0f0f0'}
-              paddingX={5}
-            >
-              <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Typography>
-              <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-                Quantity: {quantity}
-              </Typography>
-              <Button variant="contained" onClick={() => removeItem(name)}>
-                Remove
-              </Button>
-            </Box>
-          ))}
-        </Stack>
+  {inventory.map(({ name, quantity }) => (
+    <Box
+      key={name}
+      width="100%"
+      minHeight="150px"
+      display={'flex'}
+      justifyContent={'space-between'}
+      alignItems={'center'}
+      bgcolor={'#f0f0f0'} // Light background color
+      paddingX={5}
+    >
+      <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
+        {name.charAt(0).toUpperCase() + name.slice(1)} {/* Capitalize first letter */}
+      </Typography>
+      <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
+        Quantity: {quantity}
+      </Typography>
+      <Button variant="contained" onClick={() => removeItem(name)}>
+        Remove
+      </Button>
+    </Box>
+  ))}
+</Stack>
+
       </Box>
     </Box>
   );

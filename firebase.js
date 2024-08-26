@@ -1,12 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from 'firebase/firestore';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDSfNtHvRw1QF7K5PXqlS1o45ZawlEl3Sk",
   authDomain: "pantry-tracker-5c00f.firebaseapp.com",
@@ -23,8 +20,17 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 const firestore = getFirestore(app);
 
-// Optionally initialize Analytics if needed
-const analytics = getAnalytics(app);
+// Only initialize Analytics in the browser
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      const analytics = getAnalytics(app);
+      console.log("Analytics initialized");
+    } else {
+      console.log("Analytics not supported");
+    }
+  });
+}
 
 // Export Firestore so it can be used in other parts of the app
 export { firestore };
